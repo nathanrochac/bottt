@@ -182,11 +182,25 @@ Reserve antes que as vagas acabem 👇`,
       case 'verificar_pagamento':
 
   if (!pagamentos[chatId]) {
-    await bot.sendMessage(
-      chatId,
-      '❌ Nenhum pagamento encontrado.'
-    );
+    await bot.sendMessage(chatId, '❌ Nenhum pagamento encontrado.');
     break;
+  }
+
+  await bot.sendMessage(chatId, '⏳ Verificando pagamento...');
+
+  const resultado = await verificarPagamento(
+    pagamentos[chatId].identifier
+  );
+
+  console.log('RESULTADO SYNCPAY:');
+  console.log(resultado);
+
+  await bot.sendMessage(
+    chatId,
+    `📄 Retorno da API:\n\n${JSON.stringify(resultado, null, 2)}`
+  );
+
+  break;
   }
 
   await bot.sendMessage(

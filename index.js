@@ -181,51 +181,53 @@ Reserve antes que as vagas acabem 👇`,
         break;
 
       case 'verificar_pagamento':
-        if (!pagamentos[chatId]) {
-          await bot.sendMessage(chatId, '❌ Nenhum pagamento encontrado.');
-          break;
-        }
+  if (!pagamentos[chatId]) {
+    await bot.sendMessage(chatId, '❌ Nenhum pagamento encontrado.');
+    break;
+  }
 
-        await bot.sendMessage(chatId, '⏳ Verificando pagamento...');
+  await bot.sendMessage(chatId, '⏳ Verificando pagamento...');
 
-        const resultado = await verificarPagamento(pagamentos[chatId].identifier);
+  const resultado = await verificarPagamento(pagamentos[chatId].identifier);
 
-        console.log('Status pagamento:', status);
+  const status = resultado?.data?.status;
 
-        const status = resultado?.data?.status;
+  console.log('Status pagamento:', status);
 
-        if (
-          status === 'completed' ||
-          status === 'paid' ||
-          status === 'approved'
-        ) {
-          await bot.sendMessage(
-            chatId,
-            `✅ Pagamento aprovado!
+  if (
+    status === 'completed' ||
+    status === 'paid' ||
+    status === 'approved'
+  ) {
+    await bot.sendMessage(
+      chatId,
+      `✅ Pagamento aprovado!
 
 🔥 Oferta especial liberada!
 
 Adicione agora o Pack Premium por apenas R$19,90.`,
-            {
-              reply_markup: {
-                inline_keyboard: [
-                  [{ text: '🔥 Comprar Upgrade - R$19,90', callback_data: 'comprar_upsell' }]
-                ]
-              }
-            }
-          );
-        } else {
-          await bot.sendMessage(
-            chatId,
-            `⏳ Pagamento ainda não identificado.
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔥 Comprar Upgrade - R$19,90', callback_data: 'comprar_upsell' }]
+          ]
+        }
+      }
+    );
+  } 
+  
+  else {
+    await bot.sendMessage(
+      chatId,
+      `⏳ Pagamento ainda não identificado.
 
 Status atual: ${status || 'pendente'}
 
 Se você já pagou, aguarde alguns segundos e clique em verificar novamente.`
-          );
-        }
+    );
+  }
 
-        break;
+  break;
     }
   } catch (error) {
     console.log('ERRO COMPLETO:');

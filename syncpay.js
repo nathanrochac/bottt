@@ -51,4 +51,23 @@ async function gerarPix(valor) {
   return response.data;
 }
 
-module.exports = { gerarPix };
+async function verificarPagamento(identifier) {
+  const token = await gerarToken();
+
+  const response = await axios.get(
+    `${BASE_URL}/api/partner/v1/cash-in/${identifier}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json'
+      }
+    }
+  );
+
+  return response.data;
+}
+
+module.exports = {
+  gerarPix,
+  verificarPagamento
+};

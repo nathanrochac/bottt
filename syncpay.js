@@ -55,8 +55,9 @@ async function verificarPagamento(identifier) {
   const token = await gerarToken();
 
   const response = await axios.get(
-    `${BASE_URL}/api/partner/v1/cash-in/${identifier}`,
+    `${BASE_URL}/api/partner/v1/transaction/${identifier}`,
     {
+      timeout: 15000,
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json'

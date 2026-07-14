@@ -3,7 +3,7 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const QRCode = require('qrcode');
 const path = require('path');
-const { gerarPix, verificarPagamento } = require('./mangofy');
+const { gerarPix, verificarPagamento } = require('./sync');
 const { enviarEventoTikTok } = require('./tiktok');
 
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
@@ -318,13 +318,16 @@ async function criarPagamento(chatId, valor, produto) {
   produto
 );
 
-  const pix = await gerarPix(valor, {
-  name: 'Cliente Telegram',
-  email: 'cliente@email.com',
-  document: '52998224725',
-  phone: '5511999999999',
-  ip: '127.0.0.1'
-});
+  const pix = await gerarPix(
+  valor,
+  {
+    name: 'Cliente Telegram',
+    email: 'cliente@email.com',
+    document: '52998224725',
+    phone: '61999999999'
+  },
+  produto
+);
 
   console.log('PIX RETORNO:', JSON.stringify(pix));
 
@@ -396,3 +399,4 @@ Para concluir a validação da sua conta, realize o pagamento da taxa de verific
     }
   );
 }
+

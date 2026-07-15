@@ -2,7 +2,11 @@ require('dotenv').config();
 
 const axios = require('axios');
 
-const BASE_URL = String(process.env.SYNC_BASE_URL || '').replace(/\/+$/, '');
+const BASE_URL = String(
+  process.env.SYNC_BASE_URL || 'https://app.syncpayments.com.br'
+)
+  .replace(/\/+$/, '')
+  .replace(/\/api$/, '');
 
 const CLIENT_ID = process.env.SYNC_CLIENT_ID;
 const CLIENT_SECRET = process.env.SYNC_CLIENT_SECRET;

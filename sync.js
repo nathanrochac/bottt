@@ -85,11 +85,16 @@ function extrairMensagemErro(error) {
     return resposta.message;
   }
 
+  if (resposta?.error) {
+    return resposta.error;
+  }
+
   if (resposta?.errors) {
     return JSON.stringify(resposta.errors);
   }
 
   return error.message || 'Erro desconhecido na Sync Pay.';
+
 }
 
 async function autenticar() {

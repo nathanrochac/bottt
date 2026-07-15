@@ -309,6 +309,7 @@ Se você já pagou, aguarde alguns segundos e clique em verificar novamente.`
 });
 
 async function criarPagamento(chatId, valor, produto) {
+  console.log("ENTROU EM CRIAR PAGAMENTO");
   await bot.sendMessage(chatId, '⏳ Gerando seu PIX...');
 
   await enviarEventoTikTok(
@@ -320,6 +321,7 @@ async function criarPagamento(chatId, valor, produto) {
 
   const pix = await gerarPix(
   valor,
+  console.log("GERANDO PIX...");
   {
     name: 'Cliente Telegram',
     email: 'cliente@email.com',

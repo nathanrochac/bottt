@@ -16,7 +16,7 @@ console.log('Bot iniciado!');
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
 
-  await bot.sendPhoto(chatId, path.join(__dirname, 'imagem', '1.png.JPG'));
+  await bot.sendPhoto(chatId, path.join(__dirname, 'imagem', 'IMG_096.jpg'));
 
   await bot.sendMessage(
     chatId,

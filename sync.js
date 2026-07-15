@@ -227,7 +227,14 @@ async function gerarPix(
   }
 
   try {
-    const resposta = await requisicaoAutenticada({
+  console.log('[SYNCPAY] Criando PIX:', {
+    amount: payload.amount,
+    description: payload.description,
+    client: payload.client,
+    webhook: payload.webhook_url || null
+  });
+
+  const resposta = await requisicaoAutenticada({
       method: 'POST',
       url: '/api/partner/v1/cash-in',
       data: payload

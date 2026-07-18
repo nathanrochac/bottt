@@ -3,81 +3,76 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const QRCode = require('qrcode');
 const path = require('path');
+
 const { gerarPix, verificarPagamento } = require('./syncpay');
 const { enviarEventoTikTok } = require('./tiktok');
 
-const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
+const bot = new TelegramBot(process.env.BOT_TOKEN, {
+  polling: true
+});
 
 const pagamentos = {};
-const gifPath = path.join(__dirname, 'imagem', '5s.gif');
 
 console.log('Bot iniciado!');
 
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
 
-  await bot.sendPhoto(chatId, path.join(__dirname, 'imagem', 'IMG_096.jpg'));
+  try {
+    await bot.sendPhoto(
+      chatId,
+      path.join(__dirname, 'imagem', 'IMG_096.jpg')
+    );
 
-  await bot.sendMessage(
-    chatId,
-    `Oiie 😏
+    await bot.sendMessage(
+      chatId,
+      `Oiie 😏
 
 Vi que você entrou aqui e resolvi te mostrar uma prévia rapidinha...
 Mas isso é só uma parte 👀🔥
 
 Entrando aqui, você ganha:
 
-📁 +700 Mídias
-🔥 Eu me masturbando pra você até gozar
-🎁 Sorteios semanais de chamadas privadas
-🔞 Fotos e vídeos exclusivos VIP
-🎥 Ao vivo comigo, peladinha, fazendo o que você pedir
+📁 +700 mídias
+🔥 Conteúdos exclusivos
+🎁 Sorteios semanais
+🔞 Fotos e vídeos VIP
+🎥 Conteúdos novos frequentemente
 
 👇 Escolha uma opção abaixo:`,
-    {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '👀 Ver Mais', callback_data: 'ver_mais' }]
-        ]
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: '👀 Ver Mais',
+                callback_data: 'ver_mais'
+              }
+            ]
+          ]
+        }
       }
-    }
-  );
-});
+    );
+  } catch (error) {
+    console.error('Erro no /start:', error.message);
 
-bot.onText(/\/testeupsell/, async (msg) => {
-  const chatId = msg.chat.id;
-
-  await bot.sendMessage(
-    chatId,
-    `✅ Pagamento aprovado!
-
-🔒 Última etapa para liberar seu acesso completo.
-
-Por motivos de segurança e validação da plataforma, é necessário concluir a Verificação de Identidade.
-
-💰 Valor da verificação: R$ 14,93
-
-✅ Aprovação rápida
-✅ Proteção contra acessos indevidos
-✅ Liberação imediata após confirmação
-
-⚠️ Importante: após a conclusão da validação, o valor será reembolsado diretamente para a sua conta.
-
-👇 Clique abaixo para realizar a verificação.`,
-    {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '🔒 Realizar Verificação - R$14,93', callback_data: 'comprar_upsell' }]
-        ]
-      }
-    }
-  );
+    await bot.sendMessage(
+      chatId,
+      '❌ Não foi possível iniciar o atendimento. Tente novamente.'
+    );
+  }
 });
 
 bot.on('callback_query', async (query) => {
-  const chatId = query.message.chat.id;
+  const chatId = query.message?.chat?.id;
+
+  if (!chatId) {
+    return;
+  }
 
   try {
+    await bot.answerCallbackQuery(query.id);
+
     switch (query.data) {
       case 'ver_mais':
         await bot.sendMessage(
@@ -88,9 +83,64 @@ O que você quer ver?`,
           {
             reply_markup: {
               inline_keyboard: [
-                [{ text: '🎥 Vídeos e Fotos - R$12,90', callback_data: 'videos' }],
-                [{ text: '📞 Videochamada - R$15,90', callback_data: 'videochamada' }],
-                [{ text: '💎 VIP WhatsApp - R$18,90', callback_data: 'vip' }]
+                [
+                  {
+                    text: '🎁 PROMOÇÃO - R$7,90',
+                    callback_data: 'promocao'
+                  }
+                ],
+                [
+                  {
+                    text: '🎥 Vídeos e Fotos - R$12,90',
+                    callback_data: 'videos'
+                  }
+                ],
+                [
+                  {
+                    text: '📞 Videochamada - R$15,90',
+                    callback_data: 'videochamada'
+                  }
+                ],
+                [
+                  {
+                    text: '💎 VIP WhatsApp - R$18,90',
+                    callback_data: 'vip'
+                  }
+                ]
+              ]
+            }
+          }
+        );
+        break;
+
+      case 'promocao':
+        await bot.sendAnimation(
+          chatId,
+          'https://raw.githubusercontent.com/ognathan7/telegram-bot/main/imagem/4s.gif'
+        );
+
+        await bot.sendMessage(
+          chatId,
+          `🎁 PROMOÇÃO ESPECIAL
+
+🔥 Oferta por tempo limitado
+
+✔️ Conteúdo exclusivo
+✔️ Entrega automática
+✔️ Acesso imediato após o pagamento
+
+💰 De R$12,90 por apenas R$7,90
+
+👇 Aproveite a promoção`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: '💳 Comprar por R$7,90',
+                    callback_data: 'comprar_promocao'
+                  }
+                ]
               ]
             }
           }
@@ -99,9 +149,9 @@ O que você quer ver?`,
 
       case 'videos':
         await bot.sendAnimation(
-  chatId,
-  'https://raw.githubusercontent.com/ognathan7/telegram-bot/main/imagem/5s.gif'
-);
+          chatId,
+          'https://raw.githubusercontent.com/ognathan7/telegram-bot/main/imagem/5s.gif'
+        );
 
         await bot.sendMessage(
           chatId,
@@ -121,7 +171,12 @@ O que você quer ver?`,
           {
             reply_markup: {
               inline_keyboard: [
-                [{ text: '💳 Comprar', callback_data: 'comprar_videos' }]
+                [
+                  {
+                    text: '💳 Comprar',
+                    callback_data: 'comprar_videos'
+                  }
+                ]
               ]
             }
           }
@@ -130,24 +185,29 @@ O que você quer ver?`,
 
       case 'videochamada':
         await bot.sendAnimation(
-  chatId,
-  'https://raw.githubusercontent.com/ognathan7/telegram-bot/main/imagem/8s.gif'
-);
+          chatId,
+          'https://raw.githubusercontent.com/ognathan7/telegram-bot/main/imagem/8s.gif'
+        );
 
         await bot.sendMessage(
           chatId,
           `📹 Videochamada Particular
 
-⚡️ Poucos horários disponíveis hoje
-😏 Acesso individual e exclusivo
+⚡ Poucos horários disponíveis hoje
+😏 Atendimento individual e exclusivo
 
 💰 R$15,90
 
-Reserve antes que as vagas acabem 👇`,
+Reserve antes que os horários acabem 👇`,
           {
             reply_markup: {
               inline_keyboard: [
-                [{ text: '💳 Comprar', callback_data: 'comprar_videochamada' }]
+                [
+                  {
+                    text: '💳 Comprar',
+                    callback_data: 'comprar_videochamada'
+                  }
+                ]
               ]
             }
           }
@@ -156,9 +216,9 @@ Reserve antes que as vagas acabem 👇`,
 
       case 'vip':
         await bot.sendAnimation(
-  chatId,
-  'https://raw.githubusercontent.com/ognathan7/telegram-bot/main/imagem/4s.gif'
-);
+          chatId,
+          'https://raw.githubusercontent.com/ognathan7/telegram-bot/main/imagem/4s.gif'
+        );
 
         await bot.sendMessage(
           chatId,
@@ -176,207 +236,392 @@ Reserve antes que as vagas acabem 👇`,
           {
             reply_markup: {
               inline_keyboard: [
-                [{ text: '💳 Comprar', callback_data: 'comprar_vip' }]
+                [
+                  {
+                    text: '💳 Comprar',
+                    callback_data: 'comprar_vip'
+                  }
+                ]
               ]
             }
           }
         );
         break;
 
+      case 'comprar_promocao':
+        await criarPagamento(
+          chatId,
+          7.90,
+          '🎁 PROMOÇÃO'
+        );
+        break;
+
       case 'comprar_videos':
-        await criarPagamento(chatId, 12.90, '🎥 Vídeos e Fotos');
+        await criarPagamento(
+          chatId,
+          12.90,
+          '🎥 Vídeos e Fotos'
+        );
         break;
 
       case 'comprar_videochamada':
-        await criarPagamento(chatId, 15.90, '📹 Videochamada Particular');
+        await criarPagamento(
+          chatId,
+          15.90,
+          '📹 Videochamada Particular'
+        );
         break;
 
       case 'comprar_vip':
-        await criarPagamento(chatId, 18.90, '💎 VIP Vitalício + WhatsApp');
-        break;
-
-      case 'comprar_upsell':
-        await criarPagamento(chatId, 14.93, '🔒 Verificação de Identidade');
+        await criarPagamento(
+          chatId,
+          18.90,
+          '💎 VIP Vitalício + WhatsApp'
+        );
         break;
 
       case 'copiar_codigo':
-        if (!pagamentos[chatId]) {
-          await bot.sendMessage(chatId, '❌ Nenhum PIX encontrado. Clique em comprar novamente.');
+        if (!pagamentos[chatId]?.pixCode) {
+          await bot.sendMessage(
+            chatId,
+            '❌ Nenhum PIX encontrado. Clique em comprar novamente.'
+          );
           break;
         }
 
         await bot.sendMessage(
           chatId,
-          `📋 Copie o código abaixo:
+          `📋 Copie o código PIX abaixo:
 
-\`${pagamentos[chatId].pixCode}\``,
-          { parse_mode: 'Markdown' }
+<code>${escapeHtml(pagamentos[chatId].pixCode)}</code>`,
+          {
+            parse_mode: 'HTML'
+          }
         );
         break;
 
       case 'ver_qrcode':
-        if (!pagamentos[chatId]) {
-          await bot.sendMessage(chatId, '❌ Nenhum PIX encontrado. Clique em comprar novamente.');
+        if (!pagamentos[chatId]?.pixCode) {
+          await bot.sendMessage(
+            chatId,
+            '❌ Nenhum PIX encontrado. Clique em comprar novamente.'
+          );
           break;
         }
 
-        const qrBuffer = await QRCode.toBuffer(pagamentos[chatId].pixCode);
+        const qrBuffer = await QRCode.toBuffer(
+          pagamentos[chatId].pixCode
+        );
 
-        await bot.sendPhoto(chatId, qrBuffer, {
-          caption: '📱 Escaneie este QR Code para pagar.'
-        });
+        await bot.sendPhoto(
+          chatId,
+          qrBuffer,
+          {
+            caption: '📱 Escaneie este QR Code para pagar.'
+          }
+        );
         break;
 
       case 'verificar_pagamento':
-        if (!pagamentos[chatId]) {
-          await bot.sendMessage(chatId, '❌ Nenhum pagamento encontrado.');
-          break;
-        }
+        await processarVerificacaoPagamento(chatId);
+        break;
 
-        await bot.sendMessage(chatId, '⏳ Verificando pagamento...');
-
-        const resultado = await verificarPagamento(pagamentos[chatId].identifier);
-        const status = resultado?.data?.status;
-
-        console.log('Status pagamento:', status);
-
-        if (
-          status === 'completed' ||
-          status === 'paid' ||
-          status === 'approved'
-        ) {
-
-          await enviarEventoTikTok(
-  'Purchase',
-  chatId,
-  pagamentos[chatId].valor,
-  pagamentos[chatId].produto
-);
-          await bot.sendMessage(
-            chatId,
-            `✅ Pagamento aprovado!
-
-🔒 Última etapa para liberar seu acesso completo.
-
-Por motivos de segurança e validação da plataforma, é necessário concluir a Verificação de Identidade.
-
-💰 Valor da verificação: R$ 14,93
-
-✅ Aprovação rápida
-✅ Proteção contra acessos indevidos
-✅ Liberação imediata após confirmação
-
-⚠️ Importante: após a conclusão da validação, o valor será reembolsado diretamente para a sua conta.
-
-🔒 Esta etapa existe apenas para garantir a segurança e autenticidade do cadastro.
-
-👇 Clique abaixo para realizar a verificação.`,
-            {
-              reply_markup: {
-                inline_keyboard: [
-                  [{ text: '🔒 Realizar Verificação - R$14,93', callback_data: 'comprar_upsell' }]
-                ]
-              }
-            }
-          );
-        } else {
-          await bot.sendMessage(
-            chatId,
-            `⏳ Pagamento ainda não identificado.
-
-Status atual: ${status || 'pendente'}
-
-Se você já pagou, aguarde alguns segundos e clique em verificar novamente.`
-          );
-        }
-
+      default:
+        await bot.sendMessage(
+          chatId,
+          '❌ Opção não reconhecida. Digite /start para começar novamente.'
+        );
         break;
     }
   } catch (error) {
-    console.log('ERRO COMPLETO:');
-    console.log('Erro:', error.message);
+    console.error('ERRO COMPLETO:');
+    console.error(error);
+
+    const mensagemErro =
+      error.response?.data?.message ||
+      error.response?.data ||
+      error.message ||
+      'Erro desconhecido';
 
     await bot.sendMessage(
       chatId,
-      `❌ ${JSON.stringify(error.response?.data || error.message)}`
+      `❌ Ocorreu um erro: ${formatarErro(mensagemErro)}`
     );
   }
 });
 
 async function criarPagamento(chatId, valor, produto) {
-  await bot.sendMessage(chatId, '⏳ Gerando seu PIX...');
+  await bot.sendMessage(
+    chatId,
+    '⏳ Gerando seu PIX...'
+  );
 
-  await enviarEventoTikTok(
-  'InitiateCheckout',
-  chatId,
-  valor,
-  produto
-);
+  try {
+    await enviarEventoTikTok(
+      'InitiateCheckout',
+      chatId,
+      valor,
+      produto
+    );
+  } catch (error) {
+    console.error(
+      'Erro ao enviar InitiateCheckout para o TikTok:',
+      error.message
+    );
+  }
 
   const pix = await gerarPix(valor);
 
-  console.log('PIX RETORNO:', JSON.stringify(pix));
+  console.log(
+    'PIX RETORNO:',
+    JSON.stringify(pix, null, 2)
+  );
+
+  const pixCode =
+    pix?.pix_code ||
+    pix?.data?.pix_code ||
+    pix?.qr_code ||
+    pix?.data?.qr_code ||
+    pix?.copy_paste ||
+    pix?.data?.copy_paste;
+
+  const identifier =
+    pix?.identifier ||
+    pix?.data?.identifier ||
+    pix?.reference_id ||
+    pix?.data?.reference_id ||
+    pix?.id ||
+    pix?.data?.id;
+
+  if (!pixCode) {
+    throw new Error(
+      'A API não retornou o código PIX.'
+    );
+  }
+
+  if (!identifier) {
+    throw new Error(
+      'A API não retornou o identificador do pagamento.'
+    );
+  }
 
   pagamentos[chatId] = {
-    pixCode: pix.pix_code || pix.data?.pix_code,
-    identifier: pix.identifier || pix.data?.identifier || pix.data?.reference_id,
+    pixCode,
+    identifier,
     valor,
-    produto
+    produto,
+    aprovado: false,
+    criadoEm: Date.now()
   };
 
-  console.log('IDENTIFIER SALVO:', pagamentos[chatId].identifier);
+  console.log(
+    'IDENTIFIER SALVO:',
+    pagamentos[chatId].identifier
+  );
 
-  if (produto === '🔒 Verificação de Identidade') {
-    await bot.sendMessage(
-      chatId,
-      `🔒 Verificação de Identidade
-
-Para concluir a validação da sua conta, realize o pagamento da taxa de verificação abaixo.
-
-✅ Aprovação rápida
-✅ Validação automática
-✅ Liberação imediata após confirmação
-
-⚠️ Após a conclusão da validação, o valor será reembolsado diretamente para a sua conta.
-
-🔒 Esta etapa é necessária para validar a autenticidade do cadastro e liberar a continuidade do processo.
-
-👇 Finalize o pagamento para continuar.`
-    );
-  } else {
-    await bot.sendMessage(
-      chatId,
-      `✅ Como realizar o pagamento:
+  await bot.sendMessage(
+    chatId,
+    `✅ Como realizar o pagamento:
 
 1. Abra o aplicativo do seu banco.
 2. Selecione a opção "Pagar" ou "PIX".
 3. Escolha "PIX Copia e Cola".
-4. Cole a chave abaixo e finalize o pagamento com segurança.
+4. Cole o código abaixo e finalize o pagamento.
 
 📦 Produto: ${produto}
-💰 Valor: R$ ${valor.toFixed(2).replace('.', ',')}`
-    );
-  }
+💰 Valor: ${formatarMoeda(valor)}`
+  );
 
   await bot.sendMessage(
     chatId,
     `📋 Copie o código abaixo:
 
-\`${pagamentos[chatId].pixCode}\``,
-    { parse_mode: 'Markdown' }
+<code>${escapeHtml(pixCode)}</code>`,
+    {
+      parse_mode: 'HTML'
+    }
   );
 
   await bot.sendMessage(
     chatId,
-    `Após efetuar o pagamento, clique no botão abaixo ⬇️`,
+    'Após efetuar o pagamento, clique no botão abaixo ⬇️',
     {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '✅ Verificar Pagamento', callback_data: 'verificar_pagamento' }],
-          [{ text: '📋 Copiar Código', callback_data: 'copiar_codigo' }],
-          [{ text: '📱 Ver QR Code', callback_data: 'ver_qrcode' }]
+          [
+            {
+              text: '✅ Verificar Pagamento',
+              callback_data: 'verificar_pagamento'
+            }
+          ],
+          [
+            {
+              text: '📋 Copiar Código',
+              callback_data: 'copiar_codigo'
+            }
+          ],
+          [
+            {
+              text: '📱 Ver QR Code',
+              callback_data: 'ver_qrcode'
+            }
+          ]
         ]
       }
     }
   );
 }
+
+async function processarVerificacaoPagamento(chatId) {
+  const pagamento = pagamentos[chatId];
+
+  if (!pagamento) {
+    await bot.sendMessage(
+      chatId,
+      '❌ Nenhum pagamento encontrado. Escolha um produto novamente.'
+    );
+    return;
+  }
+
+  if (pagamento.aprovado) {
+    await bot.sendMessage(
+      chatId,
+      `✅ Este pagamento já foi aprovado.
+
+📦 Produto: ${pagamento.produto}
+💰 Valor: ${formatarMoeda(pagamento.valor)}`
+    );
+    return;
+  }
+
+  await bot.sendMessage(
+    chatId,
+    '⏳ Verificando pagamento...'
+  );
+
+  const resultado = await verificarPagamento(
+    pagamento.identifier
+  );
+
+  const status = obterStatusPagamento(resultado);
+
+  console.log(
+    'Status pagamento:',
+    status
+  );
+
+  const statusNormalizado = String(status || '')
+    .trim()
+    .toLowerCase();
+
+  const statusAprovados = [
+    'completed',
+    'complete',
+    'paid',
+    'approved',
+    'success',
+    'succeeded',
+    'confirmed'
+  ];
+
+  if (statusAprovados.includes(statusNormalizado)) {
+    pagamento.aprovado = true;
+    pagamento.aprovadoEm = Date.now();
+
+    try {
+      await enviarEventoTikTok(
+        'Purchase',
+        chatId,
+        pagamento.valor,
+        pagamento.produto
+      );
+    } catch (error) {
+      console.error(
+        'Erro ao enviar Purchase para o TikTok:',
+        error.message
+      );
+    }
+
+    await bot.sendMessage(
+      chatId,
+      `✅ Pagamento aprovado!
+
+📦 Produto: ${pagamento.produto}
+💰 Valor pago: ${formatarMoeda(pagamento.valor)}
+
+Seu pedido foi confirmado com sucesso.`
+    );
+
+    return;
+  }
+
+  await bot.sendMessage(
+    chatId,
+    `⏳ Pagamento ainda não identificado.
+
+Status atual: ${status || 'pendente'}
+
+Se você já realizou o pagamento, aguarde alguns segundos e clique novamente em "Verificar Pagamento".`
+  );
+}
+
+function obterStatusPagamento(resultado) {
+  return (
+    resultado?.data?.status ||
+    resultado?.status ||
+    resultado?.data?.payment_status ||
+    resultado?.payment_status ||
+    resultado?.data?.transaction?.status ||
+    resultado?.transaction?.status
+  );
+}
+
+function formatarMoeda(valor) {
+  return Number(valor).toLocaleString(
+    'pt-BR',
+    {
+      style: 'currency',
+      currency: 'BRL'
+    }
+  );
+}
+
+function escapeHtml(texto) {
+  return String(texto)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function formatarErro(error) {
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return 'Erro inesperado.';
+  }
+}
+
+bot.on('polling_error', (error) => {
+  console.error(
+    'Erro no polling do Telegram:',
+    error.message
+  );
+});
+
+process.on('unhandledRejection', (error) => {
+  console.error(
+    'Erro não tratado:',
+    error
+  );
+});
+
+process.on('uncaughtException', (error) => {
+  console.error(
+    'Exceção não tratada:',
+    error
+  );
+});
